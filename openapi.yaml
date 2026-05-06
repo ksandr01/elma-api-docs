@@ -1,0 +1,65 @@
+openapi: 3.0.0
+info:
+    title: OpenAPI SFT ELMA365
+    version: 1.0.0
+paths:
+    /AgreementProcess/{guid}:
+        get:
+            summary: Метод получения текущего этапа согласования документа в 1С:ДО по guid документа ELMA365
+            operationId: getStatusByGuid
+            tags:
+                - 1С ДО
+            parameters:
+                - name: guid
+                  in: path
+                  required: true
+                  description: guid объекта ELMA365
+                  example: 42abcd2b-8b9c-4af9-88f7-0bc180cf74b4
+                  schema: 
+                    type: string
+                    format: uuid
+            responses: 
+              '2XX': 
+                description: текущий этап
+                content: 
+                  application/json: 
+                    schema: 
+                      required: 
+                        - elma_id
+                        - process_is_active
+                        - tasks
+                        - executor
+                        - due_date
+                      properties: 
+                        elma_id:
+                          description: guid объекта ELMA365
+                          type: string
+                          format: uuid
+                          example: 42abcd2b-8b9c-4af9-88f7-0bc180cf74b4
+                        process_is_active:
+                          description: активность процесса
+                          type: boolean
+                        tasks:
+                          description: задача
+                          type: string
+                          example: 12. Согласовать Новый лимит
+                        executor:
+                          description: исполнитель
+                          type: string
+                          example: Согласующее лицо лимиты грейд В (ДВР)
+                        due_date:
+                          description: срок исполнения
+                          type: string
+                          example: 2026-05-05T00:00:00
+              4XX: 
+                description: описание ошибки
+                content: 
+                  application/json: 
+                    schema:
+                      required: 
+                        - error
+                      properties: 
+                        error:
+                          description: описание ошибки
+                          type: string
+                          example: Ошибка получения статуса. Документ по guid не найден.
