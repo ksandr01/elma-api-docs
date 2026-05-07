@@ -3,24 +3,27 @@ info:
     title: OpenAPI SFT ELMA365
     version: 1.0.0
 paths:
-    /AgreementProcess/{guid}:
-        get:
+    /AgreementProcess:
+        post:
             summary: Метод получения текущего этапа согласования документа в 1С:ДО по guid документа ELMA365
             operationId: getStatusByGuid
             tags:
-                - 1С ДО
-            parameters:
-                - name: guid
-                  in: path
-                  required: true
-                  description: guid объекта ELMA365
-                  example: 42abcd2b-8b9c-4af9-88f7-0bc180cf74b4
+                - AgreementProcess
+            requestBody:
+              required: true
+              content:
+                 application/json: 
                   schema: 
-                    type: string
-                    format: uuid
+                    required: 
+                      - elma_id
+                    properties: 
+                      elma_id:
+                        description: guid объекта ELMA365
+                        type: string
+                        format: uuid
             responses: 
-              '2XX': 
-                description: текущий этап
+              2XX:
+                description: Успешный ответ от 1С:ДО
                 content: 
                   application/json: 
                     schema: 
@@ -28,8 +31,6 @@ paths:
                         - elma_id
                         - process_is_active
                         - tasks
-                        - executor
-                        - due_date
                       properties: 
                         elma_id:
                           description: guid объекта ELMA365
@@ -37,29 +38,52 @@ paths:
                           format: uuid
                           example: 42abcd2b-8b9c-4af9-88f7-0bc180cf74b4
                         process_is_active:
-                          description: активность процесса
+                          description: Активность процесса
                           type: boolean
                         tasks:
-                          description: задача
-                          type: string
-                          example: 12. Согласовать Новый лимит
-                        executor:
-                          description: исполнитель
-                          type: string
-                          example: Согласующее лицо лимиты грейд В (ДВР)
-                        due_date:
-                          description: срок исполнения
-                          type: string
-                          example: 2026-05-05T00:00:00
+                          $ref: '#/components/schemas/tasks'
               4XX: 
-                description: описание ошибки
+                description: Возврат ошибки
                 content: 
                   application/json: 
                     schema:
-                      required: 
+                      required:
+                        - elma_id 
                         - error
                       properties: 
+                        elma_id:
+                          description: guid объекта ELMA365
+                          type: string
+                          format: uuid
+                          example: 42abcd2b-8b9c-4af9-88f7-0bc180cf74b4
                         error:
-                          description: описание ошибки
+                          description: Описание ошибки
                           type: string
                           example: Ошибка получения статуса. Документ по guid не найден.
+
+components: 
+  schemas: 
+    task:
+      type: object
+      required: 
+        - task
+        - executor
+        - due_date
+      properties: 
+        task:
+          description: Наименование задачи
+          type: string
+          example: 12. Согласовать Новый лимит
+        executor:
+          description: Исполнитель
+          type: string
+          example: Согласующее лицо лимиты грейд В (ДВР)
+        due_date:
+          description: Срок исполнения
+          type: string
+          example: 2026-05-05T00:00:00
+    tasks:
+      type: array
+      items:
+        $ref: '#/components/schemas/task'
+
